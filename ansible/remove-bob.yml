@@ -1,0 +1,12 @@
+---
+- name: Remove User Bob
+  hosts: web_servers
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Remove the user 'bob' and their home directory
+      ansible.builtin.user:
+        name: bob
+        state: absent
+        remove: yes

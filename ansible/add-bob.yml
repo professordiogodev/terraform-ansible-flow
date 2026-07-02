@@ -1,0 +1,19 @@
+---
+- name: Intro to Ansible Playbooks
+  hosts: web_servers
+
+  tasks:
+  - name: Add the user 'bob'
+    ansible.builtin.user:
+      name: bob
+    become: yes
+    become_method: sudo
+  - name: Add home folder to 'bob'
+    ansible.builtin.file:
+      path: /home/bob
+      state: directory
+      owner: bob
+      group: bob
+      mode: '0750'
+    become: yes
+    become_method: sudo
