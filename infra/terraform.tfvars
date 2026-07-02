@@ -1,0 +1,8 @@
+vpc_cidr_block = "10.1.0.0/16"
+student_name   = "ruoxi"
+subnet_a_cidr  = "10.1.1.0/24"
+subnet_b_cidr  = "10.1.2.0/24"
+subnet_c_cidr  = "10.1.3.0/24"
+az_1           = "us-west-2a"
+az_2           = "us-west-2b"
+az_3           = "us-west-2c"
