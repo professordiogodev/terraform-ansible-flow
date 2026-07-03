@@ -13,7 +13,7 @@
     - name: Show response
       ansible.builtin.debug:
         var: response.content
-        
+
 - name: Show EC2 public IPs
   hosts: localhost
   gather_facts: false
