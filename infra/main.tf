@@ -9,35 +9,19 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Create 3 subnets
 locals {
   vpc_name = "tf-asb-flow-${var.student_name}"
-  subnets = {
-    a = {
-      cidr = var.subnet_a_cidr
-      az   = var.az_1
-    }
-    b = {
-      cidr = var.subnet_b_cidr
-      az   = var.az_2
-    }
-    c = {
-      cidr = var.subnet_c_cidr
-      az   = var.az_3
-    }
-  }
 }
 
-resource "aws_subnet" "subnets" {
-  for_each = local.subnets
-
+# Create a single subnet
+resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value.cidr
-  availability_zone       = each.value.az
+  cidr_block              = var.subnet_cidr
+  availability_zone       = var.az_1
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${local.vpc_name}-subnet-${each.key}"
+    Name = "${local.vpc_name}-subnet"
   }
 }
 
@@ -64,71 +48,9 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Associate 3 subnets
 resource "aws_route_table_association" "public" {
-  for_each = aws_subnet.subnets
-
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.public.id
-}
-
-# Application Load Balancer
-resource "aws_lb" "app" {
-  name               = "${local.vpc_name}-alb"
-  load_balancer_type = "application"
-  internal           = false
-
-  security_groups = [aws_security_group.alb.id]
-
-  subnets = [
-    aws_subnet.subnets["a"].id,
-    aws_subnet.subnets["b"].id,
-    aws_subnet.subnets["c"].id
-  ]
-
-  tags = {
-    Name = "${local.vpc_name}-alb"
-  }
-}
-
-# ALB security group
-resource "aws_security_group" "alb" {
-  name        = var.alb_sg_name
-  description = "Security group for ALB"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = var.alb_http_port
-    to_port     = var.alb_http_port
-    protocol    = var.ingress_protocol
-    cidr_blocks = [var.allowed_cidr_ipv4]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = var.egress_ip_protocol
-    cidr_blocks = [var.allowed_cidr_ipv4]
-  }
-}
-
-# Target group
-resource "aws_lb_target_group" "app" {
-  name     = "${local.vpc_name}-tg"
-  port     = var.alb_http_port
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
-}
-
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.app.arn
-  port              = var.alb_http_port
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
-  }
 }
 
 # aws_image
@@ -147,13 +69,11 @@ data "aws_ami" "al2023" {
   }
 }
 
-# ec2 instance 
+# Single ec2 instance
 resource "aws_instance" "app" {
-  for_each = aws_subnet.subnets
-
   ami                    = data.aws_ami.al2023.id
   instance_type          = var.instance_type
-  subnet_id              = each.value.id
+  subnet_id              = aws_subnet.main.id
   key_name               = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
 
@@ -161,20 +81,12 @@ resource "aws_instance" "app" {
     #!/bin/bash
     yum install -y httpd
     systemctl start httpd
-    echo "Hello from ${each.key}" > /var/www/html/index.html
+    echo "Hello from ${var.student_name}" > /var/www/html/index.html
   EOF
 
   tags = {
-    Name = "${local.vpc_name}-app-${each.key}"
+    Name = "${local.vpc_name}-app"
   }
-}
-
-resource "aws_lb_target_group_attachment" "app" {
-  for_each = aws_instance.app
-
-  target_group_arn = aws_lb_target_group.app.arn
-  target_id        = each.value.id
-  port             = var.alb_http_port
 }
 
 # aws_security_group
@@ -228,30 +140,12 @@ resource "local_file" "private_key" {
   file_permission = "0400" # Sets read-only permissions required by SSH
 }
 
-# Generate yml directly for Ansible to use
-
-resource "local_file" "ansible_all_vars" {
-  filename = "${path.module}/../ansible/group_vars/all.yml"
-
-  content = <<EOF
-alb_dns: "${aws_lb.app.dns_name}"
-
-ec2_instances:
-%{for k, instance in aws_instance.app~}
-  ${k}:
-    public_ip: "${instance.public_ip}"
-    private_ip: "${instance.private_ip}"
-%{endfor~}
-EOF
-}
-
+# Generate the Ansible inventory directly from the instance
 resource "local_file" "ansible_inventory" {
   filename = "${path.module}/../ansible/inventory.ini"
 
   content = <<EOF
 [web]
-%{for name, instance in aws_instance.app~}
-${name} ansible_host=${instance.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=./${var.student_name}-ssh-key.pem
-%{endfor~}
+app ansible_host=${aws_instance.app.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=./${var.student_name}-ssh-key.pem
 EOF
 }

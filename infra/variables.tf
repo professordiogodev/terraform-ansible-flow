@@ -10,40 +10,16 @@ variable "student_name" {
   default     = "ruoxi-test"
 }
 
-variable "subnet_a_cidr" {
-  description = "The CIDR block definition of subnet a"
+variable "subnet_cidr" {
+  description = "The CIDR block definition of the subnet"
   type        = string
   default     = "10.1.1.0/24"
 }
 
-variable "subnet_b_cidr" {
-  description = "The CIDR block definition of subnet b"
-  type        = string
-  default     = "10.1.2.0/24"
-}
-
-variable "subnet_c_cidr" {
-  description = "The CIDR block definition of subnet c"
-  type        = string
-  default     = "10.1.3.0/24"
-}
-
 variable "az_1" {
-  description = "The first availability zone"
+  description = "The availability zone for the subnet"
   type        = string
   default     = "us-west-2a"
-}
-
-variable "az_2" {
-  description = "The second availability zone"
-  type        = string
-  default     = "us-west-2b"
-}
-
-variable "az_3" {
-  description = "The third availability zone"
-  type        = string
-  default     = "us-west-2c"
 }
 
 variable "ami_owners" {
@@ -128,22 +104,4 @@ variable "egress_ip_protocol" {
   description = "IP protocol for the egress rule (-1 = all protocols)."
   type        = string
   default     = "-1"
-}
-
-variable "alb_sg_name" {
-  description = "Security Group name for the application load balancer"
-  type        = string
-  default     = "alb-sg"
-}
-
-variable "alb_http_port" {
-  description = "TCP port used for HTTP ingress for the ALB."
-  type        = number
-  default     = 80
-}
-
-variable "alb_https_port" {
-  description = "TCP port used for HTTPS ingress for the ALB."
-  type        = number
-  default     = 443
 }
