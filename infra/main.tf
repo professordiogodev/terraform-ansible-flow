@@ -221,17 +221,17 @@ resource "aws_key_pair" "my_key" {
   public_key = tls_private_key.ed25519.public_key_openssh
 }
 
-# Saves the private key locally as a .pem file
+# Saves the private key locally as a .pem file (in ansible folder)
 resource "local_file" "private_key" {
   content         = tls_private_key.ed25519.private_key_openssh
-  filename        = "${path.module}/${var.student_name}-ssh-key.pem"
+  filename        = "${path.module}/../ansible/${var.student_name}-ssh-key.pem"
   file_permission = "0400" # Sets read-only permissions required by SSH
 }
 
 # Generate yml directly for Ansible to use
 
 resource "local_file" "ansible_all_vars" {
-  filename = "${path.module}/ansible/group_vars/all.yml"
+  filename = "${path.module}/../ansible/group_vars/all.yml"
 
   content = <<EOF
 alb_dns: "${aws_lb.app.dns_name}"
@@ -246,12 +246,12 @@ EOF
 }
 
 resource "local_file" "ansible_inventory" {
-  filename = "${path.module}/ansible/inventory.ini"
+  filename = "${path.module}/../ansible/inventory.ini"
 
   content = <<EOF
 [web]
 %{for name, instance in aws_instance.app~}
-${name} ansible_host=${instance.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=${path.module}/${var.student_name}-ssh-key.pem
+${name} ansible_host=${instance.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=./${var.student_name}-ssh-key.pem
 %{endfor~}
 EOF
 }

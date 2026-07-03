@@ -16,3 +16,8 @@
 
 **/*.pem
 **/*.key
+
+# -----------------------
+# Secrets Files
+# -----------------------
+ansible/secrets.yml
