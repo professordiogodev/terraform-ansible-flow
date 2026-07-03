@@ -1,0 +1,37 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for nginx-html-templating
+- name: Stop and disable Apache (installed by EC2 user_data, conflicts with Nginx on port 80)
+  ansible.builtin.systemd:
+    name: httpd
+    state: stopped
+    enabled: no
+  failed_when: false
+
+- name: Install Nginx using DNF
+  ansible.builtin.dnf:
+    name: nginx
+    state: present
+
+- name: Ensure Nginx is started and enabled
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Template index.html to the Nginx web root
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /usr/share/nginx/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Print the index.html content for verification
+  ansible.builtin.command: cat /usr/share/nginx/html/index.html
+  register: nginx_content
+  changed_when: false
+
+- name: Show index.html content in Ansible output
+  ansible.builtin.debug:
+    var: nginx_content.stdout_lines
