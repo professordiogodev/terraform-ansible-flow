@@ -33,3 +33,8 @@ Feel like an extra?
 Make a PR to this very same repo, enabling:
 - Auto-save of new keys in ansible's folder
 - Auto-save of new IP's in ansible's variable file.
+
+![alt text](image-1.png)
+Things added:
+- A load balancer
+- Output from Terraform automatically saved under all.yml and inventory.ini

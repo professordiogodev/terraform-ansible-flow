@@ -1,0 +1,29 @@
+---
+- name: Test the Application Load Balancer
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Send HTTP request to the ALB
+      ansible.builtin.uri:
+        url: "http://{{ alb_dns }}"
+        return_content: true
+      register: response
+
+    - name: Show response
+      ansible.builtin.debug:
+        var: response.content
+        
+- name: Show EC2 public IPs
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - debug:
+        msg: "{{ ec2_instances.a.public_ip }}"
+
+    - debug:
+        msg: "{{ ec2_instances.b.public_ip }}"
+
+    - debug:
+        msg: "{{ ec2_instances.c.public_ip }}"
