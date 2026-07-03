@@ -1,8 +1,0 @@
----
-- name: Intro to Ansible Playbooks and Nginx Setup
-  hosts: all
-  become: yes
-  tasks:
-    - ansible.builtin.command: "echo hello from {{ username }}"
-  roles:
-    - nginx-html-templating
