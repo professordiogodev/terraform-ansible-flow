@@ -4,7 +4,7 @@
 
 > [!NOTE]
 > This is level 3 of a 3-level tutorial. Start with the README on the `main` branch, which explains how everything works.
-> Levels: `single-instance` → `main` → **`load-balancer`** (you are here).
+> Levels: `main` → `three-instances` → **`load-balancer`** (you are here).
 
 > [!TIP]
 > When you're done reading, do the exercise in [LAB.md](LAB.md).
