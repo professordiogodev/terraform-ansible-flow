@@ -81,12 +81,6 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "instance_name_tag" {
-  description = "Value of the Name tag applied to the EC2 instance."
-  type        = string
-  default     = "HelloWorld"
-}
-
 variable "security_group_name" {
   description = "Name of the security group (also used for its Name tag)."
   type        = string

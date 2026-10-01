@@ -98,13 +98,6 @@ resource "aws_instance" "app" {
   key_name               = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
 
-  user_data = <<-EOF
-    #!/bin/bash
-    yum install -y httpd
-    systemctl start httpd
-    echo "Hello from ${each.key}" > /var/www/html/index.html
-  EOF
-
   tags = {
     Name = "${local.vpc_name}-app-${each.key}"
   }
