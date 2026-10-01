@@ -9,5 +9,5 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2" #To avoid the heavy traffic as other students are doing a lot of labs in the meanwhile
+  region = "us-east-1"
 }
