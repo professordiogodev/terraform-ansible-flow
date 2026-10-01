@@ -79,7 +79,7 @@ Let's simulate a crash on server `b` by stopping Nginx on it:
 ansible b -b -a "systemctl stop nginx"
 ```
 
-Now run check 1 a few times:
+Now look at the HTTP status codes the ALB returns:
 
 ```bash
 for i in 1 2 3 4 5 6; do curl -s -o /dev/null -w "%{http_code}\n" http://$ALB; done
