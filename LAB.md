@@ -1,6 +1,6 @@
 # Lab 2 (Medium): Deploy the Noderino app
 
-**Branch:** `main` · **Time:** ~45 min
+**Branch:** `three-instances` · **Time:** ~45 min
 
 ## 📩 The request
 
