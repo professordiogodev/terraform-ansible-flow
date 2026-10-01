@@ -1,13 +1,6 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # tasks file for nginx-html-templating
-- name: Stop and disable Apache (installed by EC2 user_data, conflicts with Nginx on port 80)
-  ansible.builtin.systemd:
-    name: httpd
-    state: stopped
-    enabled: no
-  failed_when: false
-
 - name: Install Nginx using DNF
   ansible.builtin.dnf:
     name: nginx

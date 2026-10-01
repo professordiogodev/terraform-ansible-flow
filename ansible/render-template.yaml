@@ -1,8 +1,6 @@
 ---
-- name: Intro to Ansible Playbooks and Nginx Setup
+- name: Install Nginx and create each server's page
   hosts: all
-  become: yes
-  tasks:
-    - ansible.builtin.command: "echo hello from {{ username }}"
+  become: true
   roles:
     - nginx-html-templating
