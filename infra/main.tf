@@ -72,65 +72,6 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# Application Load Balancer
-resource "aws_lb" "app" {
-  name               = "${local.vpc_name}-alb"
-  load_balancer_type = "application"
-  internal           = false
-
-  security_groups = [aws_security_group.alb.id]
-
-  subnets = [
-    aws_subnet.subnets["a"].id,
-    aws_subnet.subnets["b"].id,
-    aws_subnet.subnets["c"].id
-  ]
-
-  tags = {
-    Name = "${local.vpc_name}-alb"
-  }
-}
-
-# ALB security group
-resource "aws_security_group" "alb" {
-  name        = var.alb_sg_name
-  description = "Security group for ALB"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = var.alb_http_port
-    to_port     = var.alb_http_port
-    protocol    = var.ingress_protocol
-    cidr_blocks = [var.allowed_cidr_ipv4]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = var.egress_ip_protocol
-    cidr_blocks = [var.allowed_cidr_ipv4]
-  }
-}
-
-# Target group
-resource "aws_lb_target_group" "app" {
-  name     = "${local.vpc_name}-tg"
-  port     = var.alb_http_port
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
-}
-
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.app.arn
-  port              = var.alb_http_port
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
-  }
-}
-
 # aws_image
 data "aws_ami" "al2023" {
   most_recent = true
@@ -167,14 +108,6 @@ resource "aws_instance" "app" {
   tags = {
     Name = "${local.vpc_name}-app-${each.key}"
   }
-}
-
-resource "aws_lb_target_group_attachment" "app" {
-  for_each = aws_instance.app
-
-  target_group_arn = aws_lb_target_group.app.arn
-  target_id        = each.value.id
-  port             = var.alb_http_port
 }
 
 # aws_security_group
@@ -228,22 +161,7 @@ resource "local_file" "private_key" {
   file_permission = "0400" # Sets read-only permissions required by SSH
 }
 
-# Generate yml directly for Ansible to use
-
-resource "local_file" "ansible_all_vars" {
-  filename = "${path.module}/../ansible/group_vars/all.yml"
-
-  content = <<EOF
-alb_dns: "${aws_lb.app.dns_name}"
-
-ec2_instances:
-%{for k, instance in aws_instance.app~}
-  ${k}:
-    public_ip: "${instance.public_ip}"
-    private_ip: "${instance.private_ip}"
-%{endfor~}
-EOF
-}
+# Generate the Ansible inventory directly from the instances
 
 resource "local_file" "ansible_inventory" {
   filename = "${path.module}/../ansible/inventory.ini"

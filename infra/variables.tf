@@ -129,21 +129,3 @@ variable "egress_ip_protocol" {
   type        = string
   default     = "-1"
 }
-
-variable "alb_sg_name" {
-  description = "Security Group name for the application load balancer"
-  type        = string
-  default     = "alb-sg"
-}
-
-variable "alb_http_port" {
-  description = "TCP port used for HTTP ingress for the ALB."
-  type        = number
-  default     = 80
-}
-
-variable "alb_https_port" {
-  description = "TCP port used for HTTPS ingress for the ALB."
-  type        = number
-  default     = 443
-}
