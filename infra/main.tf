@@ -9,35 +9,19 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Create 3 subnets
 locals {
   vpc_name = "tf-asb-flow-${var.student_name}"
-  subnets = {
-    a = {
-      cidr = var.subnet_a_cidr
-      az   = var.az_1
-    }
-    b = {
-      cidr = var.subnet_b_cidr
-      az   = var.az_2
-    }
-    c = {
-      cidr = var.subnet_c_cidr
-      az   = var.az_3
-    }
-  }
 }
 
-resource "aws_subnet" "subnets" {
-  for_each = local.subnets
-
+# Create a single subnet
+resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value.cidr
-  availability_zone       = each.value.az
+  cidr_block              = var.subnet_cidr
+  availability_zone       = var.az_1
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${local.vpc_name}-subnet-${each.key}"
+    Name = "${local.vpc_name}-subnet"
   }
 }
 
@@ -64,11 +48,8 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Associate 3 subnets
 resource "aws_route_table_association" "public" {
-  for_each = aws_subnet.subnets
-
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.main.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -88,18 +69,16 @@ data "aws_ami" "al2023" {
   }
 }
 
-# ec2 instance 
+# Single ec2 instance
 resource "aws_instance" "app" {
-  for_each = aws_subnet.subnets
-
   ami                    = data.aws_ami.al2023.id
   instance_type          = var.instance_type
-  subnet_id              = each.value.id
+  subnet_id              = aws_subnet.main.id
   key_name               = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
 
   tags = {
-    Name = "${local.vpc_name}-app-${each.key}"
+    Name = "${local.vpc_name}-app"
   }
 }
 
@@ -154,15 +133,12 @@ resource "local_file" "private_key" {
   file_permission = "0400" # Sets read-only permissions required by SSH
 }
 
-# Generate the Ansible inventory directly from the instances
-
+# Generate the Ansible inventory directly from the instance
 resource "local_file" "ansible_inventory" {
   filename = "${path.module}/../ansible/inventory.ini"
 
   content = <<EOF
 [web]
-%{for name, instance in aws_instance.app~}
-${name} ansible_host=${instance.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=./${var.student_name}-ssh-key.pem
-%{endfor~}
+app ansible_host=${aws_instance.app.public_ip} ansible_user=ec2-user ansible_ssh_private_key_file=./${var.student_name}-ssh-key.pem
 EOF
 }

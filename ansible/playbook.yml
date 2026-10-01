@@ -1,5 +1,5 @@
 ---
-- name: Nginx setup with per-host templating
+- name: Simple single-instance web server setup
   hosts: web
   become: true
 
@@ -15,13 +15,23 @@
         state: started
         enabled: true
 
-    - name: Template index.html to the Nginx web root
-      ansible.builtin.template:
-        src: templates/index.html.j2
+    - name: Deploy a static index page
+      ansible.builtin.copy:
         dest: /usr/share/nginx/html/index.html
         owner: root
         group: root
         mode: "0644"
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <title>Level 1</title>
+          </head>
+          <body>
+              <h1>Hello from level 1!</h1>
+          </body>
+          </html>
 
     - name: Print the index.html content for verification
       ansible.builtin.command: cat /usr/share/nginx/html/index.html

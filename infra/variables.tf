@@ -9,40 +9,16 @@ variable "student_name" {
   type        = string
 }
 
-variable "subnet_a_cidr" {
-  description = "The CIDR block definition of subnet a"
+variable "subnet_cidr" {
+  description = "The CIDR block definition of the subnet"
   type        = string
   default     = "10.1.1.0/24"
 }
 
-variable "subnet_b_cidr" {
-  description = "The CIDR block definition of subnet b"
-  type        = string
-  default     = "10.1.2.0/24"
-}
-
-variable "subnet_c_cidr" {
-  description = "The CIDR block definition of subnet c"
-  type        = string
-  default     = "10.1.3.0/24"
-}
-
 variable "az_1" {
-  description = "The first availability zone"
+  description = "The availability zone for the subnet"
   type        = string
   default     = "us-east-1a"
-}
-
-variable "az_2" {
-  description = "The second availability zone"
-  type        = string
-  default     = "us-east-1b"
-}
-
-variable "az_3" {
-  description = "The third availability zone"
-  type        = string
-  default     = "us-east-1c"
 }
 
 variable "ami_owners" {
