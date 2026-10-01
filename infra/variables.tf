@@ -5,9 +5,8 @@ variable "vpc_cidr_block" {
 }
 
 variable "student_name" {
-  description = "My name"
+  description = "Your name (lowercase, no spaces). Used to name the VPC, key pair and ALB so students don't clash in the shared AWS account."
   type        = string
-  default     = "ruoxi-test"
 }
 
 variable "subnet_a_cidr" {
@@ -31,19 +30,19 @@ variable "subnet_c_cidr" {
 variable "az_1" {
   description = "The first availability zone"
   type        = string
-  default     = "us-west-2a"
+  default     = "us-east-1a"
 }
 
 variable "az_2" {
   description = "The second availability zone"
   type        = string
-  default     = "us-west-2b"
+  default     = "us-east-1b"
 }
 
 variable "az_3" {
   description = "The third availability zone"
   type        = string
-  default     = "us-west-2c"
+  default     = "us-east-1c"
 }
 
 variable "ami_owners" {
